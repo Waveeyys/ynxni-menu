@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: white;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .menu-container {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            background: #1a1a1a;
+        }
+        
+        .main-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b00;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 2px solid #ff6b00;
+        }
+        
+        .top-categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .top-category {
+            background: #2d2d2d;
+            border: 2px solid #ff6b00;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .top-category.active {
+            background: #ff6b00;
+            color: black;
+        }
+        
+        .player-options-section {
+            background: #2d2d2d;
+            border: 2px solid #ff6b00;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b00;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .option-item {
+            background: #3d3d3d;
+            border: 1px solid #666;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .option-item.active {
+            background: #ff6b00;
+            color: black;
+            border-color: #ff8c00;
+        }
+        
+        .controls {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="main-title">GIA MENU</div>
+        
+        <div class="top-categories">
+            <div class="top-category" data-category="local">Local</div>
+            <div class="top-category" data-category="online">Online</div>
+            <div class="top-category" data-category="spawn">Spawn</div>
+        </div>
+        
+        <div class="player-options-section">
+            <div class="section-title">Player Options</div>
+            <div class="options-grid">
+                <div class="option-item" data-option="vehicle">Vehicle Options</div>
+                <div class="option-item" data-option="model">Model Changer</div>
+                <div class="option-item" data-option="outfits">Outfits</div>
+                <div class="option-item" data-option="outfitter">Outfitter</div>
+                <div class="option-item" data-option="animations">Animations</div>
+                <div class="option-item" data-option="ptfx">PTFX</div>
+                <div class="option-item" data-option="teleport">Teleport</div>
+                <div class="option-item" data-option="aim">Aim Assist</div>
+                <div class="option-item" data-option="weapons">Weapons</div>
+                <div class="option-item" data-option="weather">Weather and Time</div>
+                <div class="option-item" data-option="scripts">Scripts</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            ARROW KEYS: Navigate | ENTER: Select | BACKSPACE: Back
+        </div>
+    </div>
+
+    <script>
+        let currentSelection = 0;
+        const topCategories = ['local', 'online', 'spawn'];
+        const playerOptions = ['vehicle', 'model', 'outfits', 'outfitter', 'animations', 'ptfx', 'teleport', 'aim', 'weapons', 'weather', 'scripts'];
+        let inPlayerOptions = false;
+
+        function updateSelection() {
+            // Update top categories
+            document.querySelectorAll('.top-category').forEach((btn, index) => {
+                btn.classList.toggle('active', index === currentSelection && !inPlayerOptions);
+            });
+            
+            // Update player options
+            document.querySelectorAll('.option-item').forEach((btn, index) => {
+                btn.classList.toggle('active', index === currentSelection && inPlayerOptions);
+            });
+        }
+
+        function sendMessage(type, data) {
+            if (window.invokeNative) {
+                window.invokeNative('sendMessage', JSON.stringify({ type, data }));
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (inPlayerOptions) {
+                        if (currentSelection < 3) {
+                            // Move to top categories
+                            inPlayerOptions = false;
+                            currentSelection = 0;
+                        } else {
+                            currentSelection -= 3;
+                        }
+                    }
+                    updateSelection();
+                    sendMessage('navigate', { direction: 'up' });
+                    break;
+                    
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (!inPlayerOptions) {
+                        // Move to player options
+                        inPlayerOptions = true;
+                        currentSelection = 0;
+                    } else {
+                        if (currentSelection + 3 < playerOptions.length) {
+                            currentSelection += 3;
+                        }
+                    }
+                    updateSelection();
+                    sendMessage('navigate', { direction: 'down' });
+                    break;
+                    
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (inPlayerOptions) {
+                        currentSelection = Math.max(0, currentSelection - 1);
+                    } else {
+                        currentSelection = (currentSelection - 1 + topCategories.length) % topCategories.length;
+                    }
+                    updateSelection();
+                    sendMessage('navigate', { direction: 'left' });
+                    break;
+                    
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (inPlayerOptions) {
+                        currentSelection = Math.min(playerOptions.length - 1, currentSelection + 1);
+                    } else {
+                        currentSelection = (currentSelection + 1) % topCategories.length;
+                    }
+                    updateSelection();
+                    sendMessage('navigate', { direction: 'right' });
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (inPlayerOptions) {
+                        sendMessage('select', { option: playerOptions[currentSelection] });
+                    } else {
+                        sendMessage('select', { category: topCategories[currentSelection] });
+                    }
+                    break;
+                    
+                case 'Backspace':
+                    e.preventDefault();
+                    if (inPlayerOptions) {
+                        inPlayerOptions = false;
+                        currentSelection = 0;
+                    } else {
+                        sendMessage('back', {});
+                    }
+                    updateSelection();
+                    break;
+            }
+        });
+
+        // Handle messages from Lua
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (data.type === 'toggleMenu') {
+                document.body.style.display = data.data.visible ? 'block' : 'none';
+                // Reset selection when menu opens
+                if (data.data.visible) {
+                    currentSelection = 0;
+                    inPlayerOptions = false;
+                    updateSelection();
+                }
+            }
+        });
+
+        updateSelection();
+    </script>
+</body>
+</html>
