@@ -3,208 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ynxni Menu</title>
+    <title>LiquidGlass Menu</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --dark: #0f172a;
-            --darker: #020617;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --card-bg: rgba(15, 23, 42, 0.95);
+            --primary: #00d4ff;
+            --primary-glow: #00ff88;
+            --secondary: #ff0080;
             --glass: rgba(255, 255, 255, 0.1);
+            --glass-dark: rgba(0, 0, 0, 0.2);
+            --background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
         }
 
         body {
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
-            color: var(--light);
+            background: var(--background);
+            color: var(--text);
             min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Liquid Glass Background Effects */
+        .liquid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .liquid-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+        }
+
+        /* Main Container */
+        .menu-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass);
+            border-radius: 20px 0 0 20px;
+            box-shadow: 
+                -20px 0 40px rgba(0, 212, 255, 0.1),
+                inset 1px 0 0 rgba(255, 255, 255, 0.1);
+            position: relative;
             overflow: hidden;
         }
 
-        .menu-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%231e293b" points="0,1000 1000,0 1000,1000"/></svg>') no-repeat center center;
-            background-size: cover;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--glass);
-            padding: 2rem 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo {
+        /* Header */
+        .header {
             text-align: center;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid var(--primary);
+            border-bottom: 1px solid var(--glass);
+            position: relative;
         }
 
-        .logo h1 {
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 25%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .logo {
             font-size: 1.8rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--primary-glow));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
 
-        .logo .version {
-            color: var(--gray);
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 300;
         }
 
-        .main-tabs {
+        /* Content Area */
+        .content {
             flex: 1;
-        }
-
-        .tab {
-            padding: 1rem 1.5rem;
-            margin: 0.5rem 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-weight: 500;
-        }
-
-        .tab:hover {
-            background: var(--glass);
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .tab .icon {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 2rem;
             overflow-y: auto;
+            padding-right: 0.5rem;
         }
 
-        .content-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 2rem;
+        /* Scrollbar Styling */
+        .content::-webkit-scrollbar {
+            width: 4px;
         }
 
-        .content-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--light), var(--gray));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .content::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .status-indicators {
-            display: flex;
-            gap: 1rem;
+        .content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
         }
 
-        .status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        /* Feature Cards */
+        .feature-card {
             background: var(--glass);
-        }
-
-        .status.active {
-            background: var(--secondary);
-            color: var(--darker);
-        }
-
-        /* Menu Items Grid */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .menu-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary);
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
         }
 
-        .menu-card.selected {
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateX(-5px);
             border-color: var(--primary);
-            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .feature-card.active {
+            border-color: var(--primary);
+            background: rgba(0, 212, 255, 0.1);
         }
 
         .card-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
 
-        .card-title {
-            font-size: 1.2rem;
+        .feature-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            color: var(--light);
+            color: var(--text);
         }
 
-        .card-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
+        .feature-badge {
+            background: var(--primary);
+            color: black;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
             font-size: 0.7rem;
             font-weight: 700;
-            text-transform: uppercase;
         }
 
-        .badge-new {
-            background: var(--accent);
-            color: var(--darker);
-        }
-
-        .badge-pro {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .card-description {
-            color: var(--gray);
-            font-size: 0.9rem;
-            line-height: 1.5;
+        .feature-description {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
             margin-bottom: 1rem;
         }
 
@@ -215,18 +204,24 @@
             align-items: center;
         }
 
+        .toggle-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
         .toggle {
             position: relative;
             width: 50px;
             height: 26px;
-            background: var(--gray);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .toggle.active {
-            background: var(--secondary);
+            background: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
         .toggle-handle {
@@ -238,21 +233,33 @@
             background: white;
             border-radius: 50%;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .toggle.active .toggle-handle {
             left: 27px;
         }
 
-        /* Slider */
+        /* Sliders */
         .slider-container {
             margin-top: 1rem;
+            display: none;
+        }
+
+        .feature-card.active .slider-container {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .slider {
             width: 100%;
             height: 6px;
-            background: var(--glass);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
@@ -260,35 +267,20 @@
 
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             background: var(--primary);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
         }
 
         .slider-value {
-            text-align: right;
+            text-align: center;
             color: var(--primary);
             font-weight: 600;
             margin-top: 0.5rem;
-        }
-
-        /* Keybind */
-        .keybind {
-            padding: 0.5rem 1rem;
-            background: var(--glass);
-            border-radius: 8px;
-            font-family: monospace;
             font-size: 0.9rem;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .keybind.binding {
-            border-color: var(--accent);
-            background: rgba(245, 158, 11, 0.1);
         }
 
         /* Footer */
@@ -297,233 +289,178 @@
             padding-top: 1rem;
             border-top: 1px solid var(--glass);
             text-align: center;
-            color: var(--gray);
+            color: var(--text-secondary);
             font-size: 0.8rem;
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* Status Indicator */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            font-size: 0.8rem;
         }
 
-        .pulse {
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--darker);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="liquid-bubble" style="width: 200px; height: 200px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+        <div class="liquid-bubble" style="width: 150px; height: 150px; top: 60%; left: 80%; animation-delay: 2s;"></div>
+        <div class="liquid-bubble" style="width: 100px; height: 100px; top: 30%; left: 60%; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Menu Container -->
     <div class="menu-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">
-                <h1>QUANTUM</h1>
-                <div class="version">v2.0.1 PREMIUM</div>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">LIQUIDGLASS</div>
+            <div class="subtitle">Premium Menu System</div>
+            <div class="status" style="margin-top: 0.5rem;">
+                <div class="status-dot"></div>
+                <span>READY</span>
             </div>
-            
-            <div class="main-tabs">
-                <div class="tab active" data-tab="main">
-                    <span class="icon">⚡</span>
-                    <span>Main Features</span>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- God Mode Card -->
+            <div class="feature-card" data-feature="godmode">
+                <div class="card-header">
+                    <div class="feature-title">God Mode</div>
+                    <div class="feature-badge">PRO</div>
                 </div>
-                <div class="tab" data-tab="player">
-                    <span class="icon">👤</span>
-                    <span>Player</span>
+                <div class="feature-description">
+                    Become completely invincible to all damage sources.
                 </div>
-                <div class="tab" data-tab="vehicle">
-                    <span class="icon">🚗</span>
-                    <span>Vehicle</span>
+                <div class="toggle-container">
+                    <span class="toggle-label">Enable God Mode</span>
+                    <div class="toggle" data-target="godmode">
+                        <div class="toggle-handle"></div>
+                    </div>
                 </div>
-                <div class="tab" data-tab="weapon">
-                    <span class="icon">🔫</span>
-                    <span>Weapons</span>
+            </div>
+
+            <!-- No Clip Card -->
+            <div class="feature-card active" data-feature="noclip">
+                <div class="card-header">
+                    <div class="feature-title">No Clip</div>
+                    <div class="feature-badge">NEW</div>
                 </div>
-                <div class="tab" data-tab="visual">
-                    <span class="icon">👁️</span>
-                    <span>Visuals</span>
+                <div class="feature-description">
+                    Fly through walls and objects with free movement.
                 </div>
-                <div class="tab" data-tab="world">
-                    <span class="icon">🌎</span>
-                    <span>World</span>
+                <div class="toggle-container">
+                    <span class="toggle-label">Enable No Clip</span>
+                    <div class="toggle active" data-target="noclip">
+                        <div class="toggle-handle"></div>
+                    </div>
                 </div>
-                <div class="tab" data-tab="settings">
-                    <span class="icon">⚙️</span>
-                    <span>Settings</span>
+                <div class="slider-container">
+                    <input type="range" class="slider" min="1" max="10" value="3" step="0.5" data-target="noclip-speed">
+                    <div class="slider-value">Speed: 3.0</div>
+                </div>
+            </div>
+
+            <!-- Invisibility Card -->
+            <div class="feature-card" data-feature="invisible">
+                <div class="card-header">
+                    <div class="feature-title">Invisibility</div>
+                </div>
+                <div class="feature-description">
+                    Become invisible to other players and NPCs.
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Enable Invisibility</span>
+                    <div class="toggle" data-target="invisible">
+                        <div class="toggle-handle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle God Mode Card -->
+            <div class="feature-card" data-feature="vehicleGodmode">
+                <div class="card-header">
+                    <div class="feature-title">Vehicle God Mode</div>
+                </div>
+                <div class="feature-description">
+                    Make your vehicle indestructible and immune to damage.
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Enable Vehicle God Mode</span>
+                    <div class="toggle" data-target="vehicleGodmode">
+                        <div class="toggle-handle"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-header">
-                <h2>Main Features</h2>
-                <div class="status-indicators">
-                    <div class="status active">ONLINE</div>
-                    <div class="status">PREMIUM</div>
-                </div>
-            </div>
-
-            <div class="menu-grid">
-                <!-- God Mode Card -->
-                <div class="menu-card selected" data-action="godmode">
-                    <div class="card-header">
-                        <div class="card-title">God Mode</div>
-                        <div class="card-badge badge-pro">PRO</div>
-                    </div>
-                    <div class="card-description">
-                        Become invincible to all damage sources including players, NPCs, and environmental hazards.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Enable God Mode</span>
-                        <div class="toggle" data-target="godmode">
-                            <div class="toggle-handle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- No Clip Card -->
-                <div class="menu-card" data-action="noclip">
-                    <div class="card-header">
-                        <div class="card-title">No Clip</div>
-                        <div class="card-badge badge-new">NEW</div>
-                    </div>
-                    <div class="card-description">
-                        Fly through walls and objects with customizable movement speed and controls.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Enable No Clip</span>
-                        <div class="toggle" data-target="noclip">
-                            <div class="toggle-handle"></div>
-                        </div>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" class="slider" min="1" max="20" value="5" data-target="noclip-speed">
-                        <div class="slider-value">Speed: 5.0</div>
-                    </div>
-                </div>
-
-                <!-- Invisibility Card -->
-                <div class="menu-card" data-action="invisible">
-                    <div class="card-header">
-                        <div class="card-title">Invisibility</div>
-                    </div>
-                    <div class="card-description">
-                        Become completely invisible to other players and NPCs while maintaining full functionality.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Enable Invisibility</span>
-                        <div class="toggle" data-target="invisible">
-                            <div class="toggle-handle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vehicle God Mode Card -->
-                <div class="menu-card" data-action="vehicle-godmode">
-                    <div class="card-header">
-                        <div class="card-title">Vehicle God Mode</div>
-                    </div>
-                    <div class="card-description">
-                        Make your current vehicle indestructible with collision and damage protection.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Enable Vehicle God Mode</span>
-                        <div class="toggle" data-target="vehicle-godmode">
-                            <div class="toggle-handle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Speed Boost Card -->
-                <div class="menu-card" data-action="speed-boost">
-                    <div class="card-header">
-                        <div class="card-title">Vehicle Speed Boost</div>
-                    </div>
-                    <div class="card-description">
-                        Instant acceleration and increased top speed for all vehicles with customizable power.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Enable Speed Boost</span>
-                        <div class="toggle" data-target="speed-boost">
-                            <div class="toggle-handle"></div>
-                        </div>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" class="slider" min="50" max="200" value="100" data-target="boost-speed">
-                        <div class="slider-value">Power: 100%</div>
-                    </div>
-                </div>
-
-                <!-- Keybinds Card -->
-                <div class="menu-card" data-action="keybinds">
-                    <div class="card-header">
-                        <div class="card-title">Key Bindings</div>
-                    </div>
-                    <div class="card-description">
-                        Customize your control scheme for quick access to frequently used features.
-                    </div>
-                    <div class="toggle-container">
-                        <span>Menu Toggle Key</span>
-                        <div class="keybind" data-target="menu-key">F5</div>
-                    </div>
-                    <div class="toggle-container">
-                        <span>No Clip Toggle</span>
-                        <div class="keybind" data-target="noclip-key">N</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="footer">
-                Ynxni Menu v2.0.1 | Premium Edition | Made with ❤️
-            </div>
+        <!-- Footer -->
+        <div class="footer">
+            LiquidGlass v1.0 | Right Side Menu
         </div>
     </div>
 
     <script>
-        class YnxniMenu {
+        class LiquidGlassMenu {
             constructor() {
-                this.currentTab = 'main';
-                this.selectedCard = null;
-                this.bindings = {};
+                this.currentFeature = 'noclip';
                 this.init();
             }
 
             init() {
+                this.createLiquidBackground();
                 this.setupEventListeners();
-                this.loadSettings();
+                this.notifyReady();
+            }
+
+            createLiquidBackground() {
+                const bg = document.querySelector('.liquid-bg');
+                for (let i = 0; i < 8; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'liquid-bubble';
+                    const size = Math.random() * 100 + 50;
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    const delay = Math.random() * 6;
+                    
+                    bubble.style.cssText = `
+                        width: ${size}px;
+                        height: ${size}px;
+                        top: ${top}%;
+                        left: ${left}%;
+                        animation-delay: ${delay}s;
+                        opacity: ${Math.random() * 0.1 + 0.05};
+                    `;
+                    
+                    bg.appendChild(bubble);
+                }
             }
 
             setupEventListeners() {
-                // Tab navigation
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        this.switchTab(e.currentTarget.dataset.tab);
-                    });
-                });
-
-                // Card selection
-                document.querySelectorAll('.menu-card').forEach(card => {
+                // Feature card selection
+                document.querySelectorAll('.feature-card').forEach(card => {
                     card.addEventListener('click', (e) => {
-                        this.selectCard(e.currentTarget);
+                        if (!e.target.closest('.toggle')) {
+                            this.selectFeature(card);
+                        }
                     });
                 });
 
@@ -531,7 +468,7 @@
                 document.querySelectorAll('.toggle').forEach(toggle => {
                     toggle.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        this.toggleFeature(e.currentTarget.dataset.target);
+                        this.toggleFeature(toggle.dataset.target);
                     });
                 });
 
@@ -541,172 +478,100 @@
                         this.updateSlider(e.target);
                     });
                 });
+            }
 
-                // Keybinds
-                document.querySelectorAll('.keybind').forEach(keybind => {
-                    keybind.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.startKeybinding(e.target);
-                    });
+            selectFeature(card) {
+                document.querySelectorAll('.feature-card').forEach(c => {
+                    c.classList.remove('active');
                 });
-            }
-
-            switchTab(tabName) {
-                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-                
-                document.querySelector('.content-header h2').textContent = 
-                    tabName.charAt(0).toUpperCase() + tabName.slice(1) + ' Features';
-                
-                this.currentTab = tabName;
-            }
-
-            selectCard(card) {
-                document.querySelectorAll('.menu-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                this.selectedCard = card.dataset.action;
+                card.classList.add('active');
+                this.currentFeature = card.dataset.feature;
             }
 
             toggleFeature(feature) {
                 const toggle = document.querySelector(`[data-target="${feature}"]`);
+                const isActive = toggle.classList.contains('active');
+                
                 toggle.classList.toggle('active');
                 
-                // Send message to Lua
                 this.sendToLua('toggleFeature', {
                     feature: feature,
-                    state: toggle.classList.contains('active')
+                    state: !isActive
                 });
             }
 
             updateSlider(slider) {
                 const valueDisplay = slider.parentElement.querySelector('.slider-value');
-                const target = slider.dataset.target;
-                
-                valueDisplay.textContent = `${this.getSliderLabel(target)}: ${slider.value}${this.getSliderSuffix(target)}`;
+                valueDisplay.textContent = `Speed: ${slider.value}`;
                 
                 this.sendToLua('updateSlider', {
-                    target: target,
+                    target: slider.dataset.target,
                     value: parseFloat(slider.value)
                 });
-            }
-
-            getSliderLabel(target) {
-                const labels = {
-                    'noclip-speed': 'Speed',
-                    'boost-speed': 'Power'
-                };
-                return labels[target] || 'Value';
-            }
-
-            getSliderSuffix(target) {
-                const suffixes = {
-                    'noclip-speed': '.0',
-                    'boost-speed': '%'
-                };
-                return suffixes[target] || '';
-            }
-
-            startKeybinding(element) {
-                element.classList.add('binding');
-                element.textContent = 'Press any key...';
-                
-                const handler = (e) => {
-                    e.preventDefault();
-                    const key = this.getKeyName(e);
-                    element.textContent = key;
-                    element.classList.remove('binding');
-                    
-                    this.sendToLua('setKeybind', {
-                        target: element.dataset.target,
-                        key: key,
-                        keyCode: e.keyCode
-                    });
-                    
-                    document.removeEventListener('keydown', handler);
-                };
-                
-                document.addEventListener('keydown', handler);
-            }
-
-            getKeyName(event) {
-                if (event.key === ' ') return 'SPACE';
-                return event.key.toUpperCase();
             }
 
             sendToLua(type, data) {
                 if (window.invokeNative) {
                     window.invokeNative('sendMessage', JSON.stringify({ type, data }));
                 }
-                console.log('Sending to Lua:', type, data);
+                console.log('LiquidGlass → Lua:', type, data);
             }
 
-            loadSettings() {
-                // Load saved settings from localStorage or default values
-                const saved = localStorage.getItem('ynxni-settings');
-                if (saved) {
-                    const settings = JSON.parse(saved);
-                    this.applySettings(settings);
-                }
+            notifyReady() {
+                setTimeout(() => {
+                    this.sendToLua('ready', { 
+                        message: 'LiquidGlass Menu Ready',
+                        version: '1.0'
+                    });
+                }, 500);
             }
 
-            saveSettings() {
-                const settings = this.getCurrentSettings();
-                localStorage.setItem('ynxni-settings', JSON.stringify(settings));
-            }
-
-            getCurrentSettings() {
-                const settings = {};
-                // Collect all current settings
-                return settings;
-            }
-
-            applySettings(settings) {
-                // Apply loaded settings to UI
-            }
-
-            // Method to receive updates from Lua
-            updateFromLua(data) {
+            // Handle messages from Lua
+            handleMessage(data) {
+                console.log('Lua → LiquidGlass:', data);
+                
                 switch (data.type) {
                     case 'featureUpdate':
-                        this.updateFeatureState(data.feature, data.state);
+                        this.updateFeatureUI(data.data.feature, data.data.state);
                         break;
                     case 'sliderUpdate':
-                        this.updateSliderValue(data.target, data.value);
+                        this.updateSliderUI(data.data.target, data.data.value);
                         break;
-                    case 'keybindUpdate':
-                        this.updateKeybind(data.target, data.key);
+                    case 'init':
+                        console.log('Initialized with:', data.data);
                         break;
                 }
             }
 
-            updateFeatureState(feature, state) {
+            updateFeatureUI(feature, state) {
                 const toggle = document.querySelector(`[data-target="${feature}"]`);
                 if (toggle) {
                     toggle.classList.toggle('active', state);
                 }
             }
 
-            updateSliderValue(target, value) {
+            updateSliderUI(target, value) {
                 const slider = document.querySelector(`[data-target="${target}"]`);
                 if (slider) {
                     slider.value = value;
-                    this.updateSlider(slider);
-                }
-            }
-
-            updateKeybind(target, key) {
-                const keybind = document.querySelector(`[data-target="${target}"]`);
-                if (keybind) {
-                    keybind.textContent = key;
+                    const valueDisplay = slider.parentElement.querySelector('.slider-value');
+                    valueDisplay.textContent = `Speed: ${value}`;
                 }
             }
         }
 
-        // Initialize the menu
-        const menu = new YnxniMenu();
+        // Initialize menu
+        const menu = new LiquidGlassMenu();
 
-        // Expose to global scope for Lua communication
-        window.YnxniMenu = menu;
+        // Global access for Lua
+        window.LiquidGlassMenu = menu;
+
+        // Handle messages from Lua
+        window.addEventListener('message', function(event) {
+            if (window.LiquidGlassMenu) {
+                window.LiquidGlassMenu.handleMessage(event.data);
+            }
+        });
     </script>
 </body>
 </html>
