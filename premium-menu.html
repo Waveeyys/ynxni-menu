@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA Style Menu</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>GTA Style Menu (DUI Ready)</title>
     <!-- Load Google Font: Electrolize (Sleek, High-Tech, Angular) -->
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
     <!-- Load Tailwind CSS -->
@@ -24,7 +24,7 @@
         /* Basic container styling */
         body {
             /* Fallback background for preview */
-            background-color: transparent; 
+            background-color: transparent;
             color: white;
             font-family: 'Electrolize', sans-serif;
             margin: 0;
@@ -45,9 +45,9 @@
         .animate-fade-in {
             animation: fade-in 0.3s ease-out;
         }
-        
-        /* * HIGHLY RELIABLE SLIDER FIX: 
-        * The track is w-10 (~40px) and the thumb is w-3 (~12px). 
+
+        /* * HIGHLY RELIABLE SLIDER FIX:
+        * The track is w-10 (~40px) and the thumb is w-3 (~12px).
         * 25px is the correct visual translation to hit the right edge.
         */
         .toggle-thumb-on {
@@ -60,6 +60,9 @@
         .menu-hidden {
             display: none;
         }
+
+        /* small visual niceties to ensure DUI displays nicely on different aspect ratios */
+        #app-container { transform-origin: top left; }
     </style>
 </head>
 <body>
@@ -69,40 +72,64 @@
     </div>
 
     <script>
-        // --- NUI Interaction Helpers (CRITICAL FOR FIVEM) ---
-        
-        // Checks if we are running inside the FiveM/RedM NUI browser
+        // --- DUI Interaction Helpers (works with DUI & local preview)
+        // Detect environment (NUI presence detection kept for local preview compatibility).
         const isNUI = () => typeof window.GetParentResourceName === 'function';
 
-        // Set NUI mode attribute for CSS
+        // Set a data attribute for CSS / debugging
         document.body.setAttribute('data-nui-mode', isNUI() ? 'true' : 'false');
 
         /**
-         * Sends a message back to the FiveM/RedM Lua client script.
-         * @param {string} type - The type of action performed (e.g., 'closeMenu', 'toggleAction', 'menuAction').
-         * @param {any} data - The associated data (e.g., { action: 'ToggleGodmode', value: true }).
+         * Send messages to the CFX endpoint that handles DUI messages.
+         * For DUI pages hosted on GitHub and loaded via CreateDui,
+         * FiveM expects POSTs to "https://cfx_nui_gia/dui" (or simply "https://cfx_nui_gia/dui").
+         *
+         * The Lua side should be running a RegisterNUICallback('dui', ...) that'll receive:
+         *  { event: "menuAction", payload: { action: 'Whatever' } }
+         *
+         * In local preview mode (non-FiveM) this will just log and optionally simulate behaviour.
          */
-        const postMessage = (type, data = {}) => {
-            if (isNUI()) {
-                // IMPORTANT: The fetch URL maps to the RegisterNUICallback name in Lua
-                fetch(`https://${window.GetParentResourceName()}/${type}`, {
+        function SendToLua(eventName, payload = {}) {
+            // In FiveM DUI environment the special host is available:
+            // use the CFX endpoint which will be routed back to the resource via RegisterNUICallback('dui')
+            try {
+                fetch('https://cfx_nui_gia/dui', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json; charset=UTF-8',
+                        'Content-Type': 'application/json; charset=UTF-8'
                     },
-                    body: JSON.stringify(data),
-                }).catch(error => {
-                    // console.error('NUI Fetch Error:', error); 
+                    body: JSON.stringify({
+                        event: eventName,
+                        payload: payload
+                    })
+                }).catch(() => {
+                    // swallow errors silently (DUI fetch sometimes throws in preview)
                 });
+            } catch (e) {
+                // fallback for environments where fetch might throw
+            }
+        }
+
+        // Unified message helper used across this menu.
+        // Preserves previous mock behavior when running outside FiveM (local preview).
+        function postMessage(type, data = {}) {
+            if (isNUI()) {
+                // Running inside FiveM NUI/DUI environment — always send via the DUI bridge
+                // Use the unified "dui" endpoint event so Lua can handle everything in one callback.
+                SendToLua(type, data);
             } else {
-                // Mock console log for local browser/preview
+                // Local preview behavior (useful when editing the HTML in browser)
                 if (type === 'closeMenu') {
                     state.menuVisible = false;
                     render();
                 }
-                console.log(`[NUI Mock Post] Type: ${type}, Data:`, data);
+                // Log for debugging
+                console.log('[DUI Mock Post] Type:', type, 'Data:', data);
             }
-        };
+        }
+
+        // NOTE: The Lua side (DUI) can still send messages into the page using SendDuiMessage(...)
+        // which arrives here as window 'message' events (same as NUI). Keep the message listener below.
 
         // --- Configuration ---
         const HEADER_BANNER = "https://i.ibb.co/6JphhX1G/Menu-Banner3.png";
@@ -122,19 +149,17 @@
         // slider: sends a numerical value to Lua
         const slider = (label, action, min, max, initial, props = {}) => ({ label, type: 'slider', action: action || 'Slider' + label.replace(/\s/g, ''), min, max, value: initial, ...props });
 
-        // --- SUBMENUS (Matches GIA_HTML_Menu.lua / testingpremium.html structure) ---
+        // --- SUBMENUS (Matches the Lua menu structure) ---
 
-        // Local > Player > Player Options
         const playerOptions = [
             toggle('Godmode', 'ToggleGodmode'),
             slider('Quick Regen', 'SliderQuickRegen', 1, 2, 1),
-            item('Heal Player', 'HealPlayer'), 
+            item('Heal Player', 'HealPlayer'),
             item('Give Armour', 'GiveArmour'),
             item('Clean Player', 'CleanPlayer'),
             toggle('Auto Clean', 'ToggleAutoClean'),
         ];
-        
-        // Local > Player > Movement
+
         const playerMovement = [
             toggle('No Clip', 'ToggleNoClip', { description: 'Fly through objects, without T Posing, your player is still running.' }),
             slider('No Clip Speed', 'SliderNoClipSpeed', 1, 10, 1),
@@ -155,9 +180,8 @@
             item('Suicide', 'KillPlayer', { description: 'Kills your player.' }),
         ];
 
-        // Local > Vehicle
         const vehicleOptions = [
-            item('Repair Vehicle', 'RepairVehicle'), 
+            item('Repair Vehicle', 'RepairVehicle'),
             item('Upgrade Vehicle', 'UpgradeVehicle'),
             toggle('Vehicle Godmode', 'ToggleVehicleGodmode'),
             item('Toggle Engine', 'ToggleEngine'),
@@ -168,7 +192,6 @@
             toggle('Auto Repair', 'ToggleAutoRepair'),
         ];
 
-        // Local > Weapons
         const weaponsOptions = [
             item('Give All Weapons', 'GiveAllWeapons'),
             toggle('Infinite Ammo', 'ToggleInfiniteAmmo'),
@@ -183,8 +206,7 @@
                 toggle('Show FOV', 'ToggleShowFOV'),
             ]),
         ];
-        
-        // Local > World
+
         const worldOptions = [
             item('Set Weather Sunny', 'SetWeatherSunny'),
             item('Time Skip +1 Hour', 'TimeSkip'),
@@ -195,15 +217,14 @@
         ];
 
         // --- MAIN TABS ---
-
         let MENU_DATA = {
             Local: [
                 submenu('Player', [
-                    submenu('Player Options', playerOptions, { 
-                        description: 'Basic features directly related to your player ped.' 
+                    submenu('Player Options', playerOptions, {
+                        description: 'Basic features directly related to your player ped.'
                     }),
                     submenu('Movement', playerMovement, {
-                         description: 'Movement and physics-related player adjustments.'
+                        description: 'Movement and physics-related player adjustments.'
                     }),
                     submenu('Model Changer', [item('Reset Skin', 'ResetSkin'), item('Input Custom Model', 'InputCustomModel')]),
                     submenu('Outfitter', [item('Open Wardrobe', 'OpenWardrobe')]),
@@ -257,27 +278,24 @@
 
         // --- State Management ---
         let state = {
-            menuVisible: !isNUI(), 
+            menuVisible: !isNUI(),
             activeTab: 0,
             navStack: [], // Stores { title, items, previousIndex }
             selectedIndex: 0,
         };
 
         // --- Derived State & Helpers ---
-
         function isRoot() {
             return state.navStack.length === 0;
         }
 
         function getCurrentViewItems() {
-            // Get items from the top of the stack or the root tab data
             return state.navStack.length > 0
                 ? state.navStack[state.navStack.length - 1].items
                 : MENU_DATA[TABS[state.activeTab]];
         }
 
         function getCurrentHeader() {
-            // Get title from the top of the stack or the active tab name
             return state.navStack.length > 0 ? state.navStack[state.navStack.length - 1].title : TABS[state.activeTab];
         }
 
@@ -286,37 +304,28 @@
             return items[state.selectedIndex];
         }
 
-        // Deeply clone and update item state
         function updateItemState(index, updates) {
-            // Determine if we are updating an item in the stack or in the root data
             if (state.navStack.length > 0) {
-                 const activeLayer = state.navStack[state.navStack.length - 1];
-                 const newItems = [...activeLayer.items];
-                 newItems[index] = { ...newItems[index], ...updates };
-                 activeLayer.items = newItems; // Update the reference in the stack
+                const activeLayer = state.navStack[state.navStack.length - 1];
+                const newItems = [...activeLayer.items];
+                newItems[index] = { ...newItems[index], ...updates };
+                activeLayer.items = newItems;
             } else {
                 const newItems = [...MENU_DATA[TABS[state.activeTab]]];
                 newItems[index] = { ...newItems[index], ...updates };
-                MENU_DATA[TABS[state.activeTab]] = newItems; // Update the root data
+                MENU_DATA[TABS[state.activeTab]] = newItems;
             }
             render();
         }
-        
-        // --- Rendering Functions ---
 
+        // --- Rendering Functions ---
         function renderValue(item) {
             if (item.type === 'toggle') {
                 const checked = item.value;
-                // Use red for OFF, green for ON for the background track
                 const trackClass = checked ? 'bg-green-600' : 'bg-red-600';
-                
-                // Use the custom CSS class 'toggle-thumb-on'
                 const sliderClass = checked ? 'toggle-thumb-on' : 'translate-x-0';
-                
                 return `
-                    <!-- Visual Thumb Slider (using custom CSS class for reliability) -->
                     <div class="relative w-10 h-4 rounded-full ${trackClass} transition-all duration-300 flex items-center p-0.5">
-                        <!-- Thumb/Handle -->
                         <div class="absolute w-3 h-3 rounded-full bg-white shadow-md transform ${sliderClass} transition-all duration-300"></div>
                     </div>
                 `;
@@ -351,7 +360,7 @@
                 </div>
             `;
         }
-        
+
         function renderHeader() {
             const currentHeader = getCurrentHeader();
             return `
@@ -371,7 +380,7 @@
 
         function renderList() {
             const currentViewItems = getCurrentViewItems();
-            
+
             const listHTML = currentViewItems.map((item, index) => `
                 <div
                     data-item-index="${index}"
@@ -446,7 +455,7 @@
         function render() {
             const container = document.getElementById('app-container');
             if (!container) return;
-            
+
             if (state.menuVisible) {
                 container.innerHTML = renderMenu();
                 autoScroll();
@@ -456,7 +465,6 @@
         }
 
         // --- Interaction Logic (Vanilla JS Functions) ---
-
         function autoScroll() {
             const listRef = document.getElementById('menu-list');
             const items = listRef ? listRef.querySelectorAll('.menu-item') : [];
@@ -467,19 +475,17 @@
                 const elBottom = elTop + el.clientHeight;
                 const containerTop = listRef.scrollTop;
                 const containerBottom = containerTop + listRef.clientHeight;
-                
-                // Scroll up if item is above view
+
                 if (elTop < containerTop) {
                     listRef.scrollTop = elTop;
-                // Scroll down if item is below view
                 } else if (elBottom > containerBottom) {
                     listRef.scrollTop = elBottom - listRef.clientHeight;
                 }
             }
         }
-        
+
         function setSelectedIndex(newIndex) {
-             if (state.selectedIndex !== newIndex) {
+            if (state.selectedIndex !== newIndex) {
                 state.selectedIndex = newIndex;
                 render();
             }
@@ -496,7 +502,7 @@
             state.navStack.push({
                 title: item.label,
                 items: item.items,
-                previousIndex: state.selectedIndex 
+                previousIndex: state.selectedIndex
             });
             state.selectedIndex = 0;
             render();
@@ -508,11 +514,11 @@
                 state.selectedIndex = prevStack.previousIndex || 0;
                 render();
             } else {
-                // If on the root menu and pressing back/escape, close the NUI
+                // For DUI the Lua owner will control actual closing, but maintain same message contract:
                 postMessage('closeMenu');
             }
         }
-        
+
         function handleItemSelect() {
             const currentItem = getSelectedItem();
             if (!currentItem) return;
@@ -522,21 +528,22 @@
             } else if (currentItem.type === 'toggle') {
                 const newValue = !currentItem.value;
                 updateItemState(state.selectedIndex, { value: newValue });
-                // Send action to Lua: type is 'toggleAction', data includes the specific 'action' and the new value.
+                // Send to Lua via DUI bridge
                 postMessage('toggleAction', { action: currentItem.action, value: newValue });
             } else if (currentItem.type === 'action') {
-                // Send action to Lua: type is 'menuAction', data includes the specific 'action'.
                 postMessage('menuAction', { action: currentItem.action });
             }
         }
 
-        // --- NUI Message Listener (CRITICAL) ---
+        // --- DUI / Lua -> HTML Message Listener ---
+        // Dui messages from Lua arrive as window messages. Keep this handler to react to
+        // `SendDuiMessage(duiObj, json.encode({ action: 'setVisibility', visible: true }))` calls.
         window.addEventListener('message', function(event) {
-            const item = event.data;
-            
+            // event.data is expected to be a plain object when using SendDuiMessage from Lua.
+            const item = event.data || {};
+
             if (item.action === 'setVisibility') {
-                // This is the primary control message from Lua
-                state.menuVisible = item.visible;
+                state.menuVisible = !!item.visible;
                 if (item.visible) {
                     // Reset menu state when opening
                     state.navStack = [];
@@ -547,6 +554,10 @@
             } else if (item.action === 'close') {
                 state.menuVisible = false;
                 render();
+            } else if (item.action === 'heartbeatSync' && item.data) {
+                // optional: used if Lua wants to sync binds/state back to the page
+                // e.g. item.data.states, item.data.binds
+                // Implement handling here as needed in future.
             }
         });
 
@@ -556,19 +567,21 @@
 
             const currentViewItems = getCurrentViewItems();
             if (currentViewItems.length === 0) return;
-            
+
             const currentItem = getSelectedItem();
 
             switch (e.key) {
                 case 'ArrowUp':
                 case 'w':
+                case 'W':
                     e.preventDefault();
                     state.selectedIndex = state.selectedIndex > 0 ? state.selectedIndex - 1 : currentViewItems.length - 1;
                     render();
                     break;
-                    
+
                 case 'ArrowDown':
                 case 's':
+                case 'S':
                     e.preventDefault();
                     state.selectedIndex = state.selectedIndex < currentViewItems.length - 1 ? state.selectedIndex + 1 : 0;
                     render();
@@ -576,6 +589,7 @@
 
                 case 'ArrowLeft':
                 case 'a':
+                case 'A':
                     e.preventDefault();
                     if (currentItem?.type === 'slider') {
                         const newVal = Math.max(currentItem.min, currentItem.value - 1);
@@ -588,6 +602,7 @@
 
                 case 'ArrowRight':
                 case 'd':
+                case 'D':
                     e.preventDefault();
                     if (currentItem?.type === 'slider') {
                         const newVal = Math.min(currentItem.max, currentItem.value + 1);
@@ -596,7 +611,7 @@
                     } else if (currentItem?.type === 'submenu') {
                         enterSubmenu(currentItem);
                     } else if (isRoot()) {
-                         // Tab switching on right arrow at the root level
+                        // Tab switching on right arrow at the root level
                         state.activeTab = state.activeTab < TABS.length - 1 ? state.activeTab + 1 : 0;
                         state.selectedIndex = 0;
                         render();
@@ -609,7 +624,7 @@
                     break;
 
                 case 'Backspace':
-                case 'Escape': 
+                case 'Escape':
                     e.preventDefault();
                     goBack();
                     break;
@@ -619,10 +634,8 @@
             }
         });
 
-
         // --- Initial Load ---
         window.onload = function() {
-            // Set up body attribute for CSS handling based on NUI environment
             document.body.setAttribute('data-nui-mode', isNUI() ? 'true' : 'false');
             render();
             if (!isNUI()) {
